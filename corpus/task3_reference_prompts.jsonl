@@ -1,0 +1,5 @@
+{"prompt":"Copy this exact string and return only the string: depth=2,branching=2,adaptive_depth=true"}
+{"prompt":"Copy this JSON object exactly and return only the JSON object: {\"gpu\":\"H100-80GB\",\"task\":\"tree_speculation\",\"target_speedup\":2.5}"}
+{"prompt":"Copy this exact string and return only the string: verifier stalls,branch expansion overhead,cache locality pressure"}
+{"prompt":"Rewrite this note into the exact template baseline=<x> target=<y> frontier=<z> with no extra words. Note: baseline 65.0 tok/s, target 2.5x, frontier 0.20."}
+{"prompt":"Return only this exact pair and no extra text: tree_depth=3,tree_branching=2"}

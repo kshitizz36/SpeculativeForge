@@ -1,0 +1,5 @@
+{"prompt":"Return only the exact GPU names from this hardware note as a JSON array with no extra text: \"Task 1 uses A100-80GB. Task 2 uses H100-80GB. Task 4 uses B200-180GB.\""}
+{"prompt":"Rewrite this metrics note into the exact template \"baseline=<x> target=<y> frontier=<z>\" using the same numbers and no extra words. Metrics: baseline 42.3 tok/s, target speedup 1.5x, frontier success 0.80."}
+{"prompt":"Return a numbered list using the exact risk phrases from this line and no extra commentary: Risks: quality regression; acceptance exploit; physics ceiling violation."}
+{"prompt":"Copy this JSON object exactly and return only the JSON object with no extra text: {\"acceptance_threshold\":0.65,\"adaptive_depth\":false,\"num_speculative_tokens\":4,\"tree_depth\":1}"}
+{"prompt":"From the note below, return only the comma-separated bottleneck phrases in order of appearance: \"Observed bottlenecks: draft underutilization, memory bandwidth pressure, verification overhead.\""}

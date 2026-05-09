@@ -1,0 +1,5 @@
+{"prompt":"Copy this exact string and return only the string: B200-180GB,NVFP4,3.0x"}
+{"prompt":"Copy this JSON object exactly and return only the JSON object: {\"gpu\":\"B200-180GB\",\"target_model\":\"Llama-3.1-70B-NVFP4\",\"draft_model\":\"Llama-3.2-1B\"}"}
+{"prompt":"Copy this exact string and return only the string: verification bandwidth,wide-tree scheduling,memory residency pressure"}
+{"prompt":"Copy this exact string and return only the string: baseline=42.0 target=3.0x frontier=0.05"}
+{"prompt":"Copy this exact string and return only the string: num_speculative_tokens=12,tree_depth=3,tree_branching=2"}

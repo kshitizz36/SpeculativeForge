@@ -1,0 +1,11 @@
+task_id: task4
+name: NVFP4 Frontier on B200
+gpu: B200-180GB
+target_model: Llama-3.1-70B-NVFP4
+draft_model: Llama-3.2-1B
+baseline_expected_tok_s: 42.0
+target_speedup: 3.0
+frontier_success_rate: 0.05
+quality_gate: 0.95
+max_steps: 10
+prompt_file: task4_reference_prompts.jsonl

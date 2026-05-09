@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpeculateForge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #080a10;
+    --bg-surface: #0d1019;
+    --bg-raised: #141824;
+    --bg-hover: #1c2233;
+    --border: #1f2738;
+    --border-active: #334155;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #475569;
+    --accent: #fbbf24;
+    --accent-dim: rgba(251, 191, 36, 0.12);
+    --green: #34d399;
+    --green-dim: rgba(52, 211, 153, 0.10);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.10);
+    --red: #f87171;
+    --red-dim: rgba(248, 113, 113, 0.10);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34, 211, 238, 0.10);
+    --pink: #f472b6;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(251, 191, 36, 0.06), transparent 28%),
+      radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.08), transparent 28%),
+      var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    height: 50px;
+    min-height: 50px;
+    background: rgba(13, 16, 25, 0.92);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    backdrop-filter: blur(14px);
+  }
+
+  .topbar-logo {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fbbf24, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .topbar-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  .topbar-env {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .topbar-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  .status-dot.live {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  .topbar-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .topbar-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #07090d;
+    font-weight: 700;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #fcd34d;
+  }
+
+  .btn-secondary {
+    background: rgba(34, 211, 238, 0.16);
+    color: var(--cyan);
+    border: 1px solid rgba(34, 211, 238, 0.22);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(34, 211, 238, 0.22);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text);
+  }
+
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr) 360px;
+    overflow: hidden;
+  }
+
+  .sidebar, .right {
+    background: var(--bg-surface);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .sidebar {
+    border-right: 1px solid var(--border);
+  }
+
+  .right {
+    border-left: 1px solid var(--border);
+  }
+
+  .sidebar-section, .panel-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-heading, .panel-heading {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .note-card {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(34, 211, 238, 0.06));
+    border: 1px solid rgba(251, 191, 36, 0.14);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .scenario-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .scenario-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  .scenario-opt:hover {
+    background: var(--bg-hover);
+  }
+
+  .scenario-opt.active {
+    background: var(--accent-dim);
+    border-color: rgba(251, 191, 36, 0.2);
+  }
+
+  .sc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sc-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 0;
+  }
+
+  .sc-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .sc-detail {
+    color: var(--text-dim);
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .sc-diff {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .checkbox-row input {
+    accent-color: var(--accent);
+  }
+
+  .button-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .small-note {
+    margin-top: 10px;
+    font-size: 10px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .ops-summary {
+    margin-bottom: 10px;
+  }
+
+  .ops-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ops-tile {
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 33, 0.72);
+    border-radius: 10px;
+    padding: 10px 11px;
+  }
+
+  .ops-k {
+    display: block;
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .ops-v {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .gauge {
+    margin-bottom: 14px;
+  }
+
+  .gauge:last-child {
+    margin-bottom: 0;
+  }
+
+  .gauge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .gauge-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .gauge-value {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .gauge-track {
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .gauge-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  .pipeline-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pipe-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.24s ease;
+  }
+
+  .pipe-step.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .pipe-step.active {
+    border-color: rgba(251, 191, 36, 0.2);
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--text);
+  }
+
+  .pipe-step.done {
+    opacity: 0.75;
+  }
+
+  .step-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .center {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .arena-panel {
+    height: 300px;
+    min-height: 300px;
+    background:
+      linear-gradient(180deg, rgba(13, 16, 25, 0.95), rgba(8, 10, 16, 0.98)),
+      var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arena-panel canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .arena-label {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    z-index: 2;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+
+  .arena-action-label {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    background: rgba(12, 15, 22, 0.88);
+    padding: 4px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .arena-action-label.visible {
+    opacity: 1;
+  }
+
+  .center-header {
+    height: 38px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab.active,
+  .tab:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+  }
+
+  .terminal,
+  .raw-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+  }
+
+  .raw-panel {
+    display: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .raw-panel.active,
+  .terminal.active {
+    display: block;
+  }
+
+  .t-line {
+    white-space: pre-wrap;
+    opacity: 0;
+    animation: lineIn 0.22s ease forwards;
+  }
+
+  @keyframes lineIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .t-label { color: var(--accent); }
+  .t-ok { color: var(--green); }
+  .t-err { color: var(--red); }
+  .t-str { color: var(--cyan); }
+  .t-kw { color: var(--pink); }
+  .t-num { color: var(--purple); }
+  .t-sub { color: var(--text-dim); }
+  .t-dim { color: var(--text-muted); }
+
+  .reward-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .rw-label {
+    width: 86px;
+    text-align: right;
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  .rw-track {
+    flex: 1;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .rw-fill {
+    height: 100%;
+    width: 0%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 6px;
+    border-radius: 4px;
+    min-width: fit-content;
+    transition: width 0.45s ease;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .throughput { background: linear-gradient(90deg, rgba(251, 191, 36, 0.45), rgba(251, 191, 36, 0.9)); }
+  .quality { background: linear-gradient(90deg, rgba(34, 211, 238, 0.45), rgba(34, 211, 238, 0.9)); }
+  .sol { background: linear-gradient(90deg, rgba(96, 165, 250, 0.45), rgba(96, 165, 250, 0.9)); }
+  .efficiency { background: linear-gradient(90deg, rgba(251, 146, 60, 0.45), rgba(251, 146, 60, 0.9)); }
+  .novelty { background: linear-gradient(90deg, rgba(167, 139, 250, 0.45), rgba(167, 139, 250, 0.9)); }
+  .penalty { background: linear-gradient(90deg, rgba(248, 113, 113, 0.45), rgba(248, 113, 113, 0.9)); }
+
+  .reward-note, .empty-state {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .cumulative-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .cum-label {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .cum-value {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green);
+  }
+
+  .finding-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .finding {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-raised);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    opacity: 0;
+    transform: scale(0.96);
+    transition: all 0.25s ease;
+  }
+
+  .finding.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .disc-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .disc-body {
+    flex: 1;
+  }
+
+  .disc-title {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .disc-detail {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .history-item,
+  .violation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--bg-raised);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .history-item .value {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .violation-item .value {
+    color: var(--red);
+    font-weight: 600;
+  }
+
+  @media (max-width: 1180px) {
+    .main {
+      grid-template-columns: 290px minmax(0, 1fr);
+    }
+
+    .right {
+      display: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    html, body {
+      overflow: auto;
+    }
+
+    .main {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .sidebar, .center, .right {
+      min-height: auto;
+    }
+
+    .right {
+      display: block;
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">SpeculateForge</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-env" id="topbarEnv">task1_easy_a100</div>
+  <div class="topbar-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+  <button class="topbar-btn btn-ghost" id="schemaBtn">Schema</button>
+  <button class="topbar-btn btn-secondary" id="resetBtn">Reset</button>
+  <button class="topbar-btn btn-primary" id="runBtn">Run Episode</button>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Live Mode</div>
+      <div class="note-card" id="modeNote">
+        UI and API are live. Hardware benchmarking is still blocked until Modal workers are wired, so the interface shows honest control-plane state instead of fake tok/s or reward numbers.
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Scenario</div>
+      <div class="scenario-list" id="scenarioList"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Ops Context</div>
+      <div class="note-card ops-summary" id="scenarioSummary">
+        Awaiting scenario details from the environment.
+      </div>
+      <div class="ops-grid">
+        <div class="ops-tile"><span class="ops-k">Scenario</span><span class="ops-v" id="scenarioName">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Objective</span><span class="ops-v" id="opsObjective">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Traffic</span><span class="ops-v" id="opsTraffic">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Latency SLA</span><span class="ops-v" id="opsLatency">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Quality SLA</span><span class="ops-v" id="opsQuality">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Budget</span><span class="ops-v" id="opsBudget">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Incident</span><span class="ops-v" id="opsIncident">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Mode</span><span class="ops-v" id="opsMode">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Risk</span><span class="ops-v" id="opsRisk">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Queue</span><span class="ops-v" id="opsQueue">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">Oversight</span><span class="ops-v" id="opsOversight">Pending</span></div>
+        <div class="ops-tile"><span class="ops-k">GPU Pool</span><span class="ops-v" id="opsPool">Pending</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Manual Config</div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="numSpecInput">Num speculative tokens</label>
+          <input id="numSpecInput" type="number" min="1" max="16" value="4">
+        </div>
+        <div class="field">
+          <label for="thresholdInput">Acceptance threshold</label>
+          <input id="thresholdInput" type="number" min="0.1" max="0.99" step="0.01" value="0.50">
+        </div>
+        <div class="field">
+          <label for="treeDepthInput">Tree depth</label>
+          <input id="treeDepthInput" type="number" min="1" max="6" value="1">
+        </div>
+        <div class="field">
+          <label for="treeBranchInput">Tree branching</label>
+          <input id="treeBranchInput" type="number" min="1" max="4" value="1">
+        </div>
+        <div class="field">
+          <label for="ngramInput">N-gram cache</label>
+          <input id="ngramInput" type="number" min="0" max="4096" value="0">
+        </div>
+        <div class="field">
+          <label for="tempInput">Draft temp</label>
+          <input id="tempInput" type="number" min="0" max="1" step="0.05" value="0.00">
+        </div>
+        <div class="field full">
+          <label for="labelInput">Label</label>
+          <input id="labelInput" type="text" value="manual_probe">
+        </div>
+        <div class="field full">
+          <label class="checkbox-row">
+            <input id="adaptiveInput" type="checkbox">
+            Enable adaptive depth
+          </label>
+        </div>
+      </div>
+      <div class="button-row">
+        <button class="topbar-btn btn-secondary" id="manualBtn">Run This Config</button>
+        <button class="topbar-btn btn-ghost" id="clearBtn">Clear Panels</button>
+      </div>
+      <div class="small-note">
+        Manual mode is wired to <code>/manual_step</code>. When the live Modal backend is enabled, the server returns real benchmark results; otherwise it falls back to preflight notes and honest backend status.
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Performance State</div>
+      <div class="gauge">
+        <div class="gauge-header">
+          <span class="gauge-label">Baseline plan</span>
+          <span class="gauge-value" id="tputVal">42.3 tok/s plan</span>
+        </div>
+        <div class="gauge-track"><div class="gauge-fill" id="tputFill" style="width:20%;background:var(--amber);"></div></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-header">
+          <span class="gauge-label">Live quality</span>
+          <span class="gauge-value" id="qualVal">Pending</span>
+        </div>
+        <div class="gauge-track"><div class="gauge-fill" id="qualFill" style="width:0%;background:var(--cyan);"></div></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-header">
+          <span class="gauge-label">Modal cost</span>
+          <span class="gauge-value" id="costVal">$0.000</span>
+        </div>
+        <div class="gauge-track"><div class="gauge-fill" id="costFill" style="width:0%;background:var(--green);"></div></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-header">
+          <span class="gauge-label">Steps</span>
+          <span class="gauge-value" id="stepVal">0 / 8</span>
+        </div>
+        <div class="gauge-track"><div class="gauge-fill" id="stepFill" style="width:0%;background:var(--accent);"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Optimization Pipeline</div>
+      <div class="pipeline-steps" id="pipelineSteps">
+        <div class="empty-state">No steps recorded yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="arena-panel">
+      <div class="arena-label">Inference Arena</div>
+      <div class="arena-action-label" id="arenaActionLabel"></div>
+      <canvas id="arenaCanvas"></canvas>
+    </div>
+    <div class="center-header">
+      <div class="tab active" data-tab="terminal">Agent Log</div>
+      <div class="tab" data-tab="raw">Raw JSON</div>
+    </div>
+    <div class="terminal active" id="terminal"></div>
+    <pre class="raw-panel" id="rawPanel">Waiting for payload...</pre>
+  </div>
+
+  <div class="right">
+    <div class="panel-section">
+      <div class="panel-heading">
+        Step Reward
+        <span id="stepRewardLabel" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);">Pending</span>
+      </div>
+      <div class="reward-row"><span class="rw-label">Throughput</span><div class="rw-track"><div class="rw-fill throughput" id="rw-throughput"></div></div></div>
+      <div class="reward-row"><span class="rw-label">Quality</span><div class="rw-track"><div class="rw-fill quality" id="rw-quality"></div></div></div>
+      <div class="reward-row"><span class="rw-label">SOL Score</span><div class="rw-track"><div class="rw-fill sol" id="rw-sol"></div></div></div>
+      <div class="reward-row"><span class="rw-label">Efficiency</span><div class="rw-track"><div class="rw-fill efficiency" id="rw-efficiency"></div></div></div>
+      <div class="reward-row"><span class="rw-label">Novelty</span><div class="rw-track"><div class="rw-fill novelty" id="rw-novelty"></div></div></div>
+      <div class="reward-row"><span class="rw-label">Penalty</span><div class="rw-track"><div class="rw-fill penalty" id="rw-penalty"></div></div></div>
+      <div class="reward-note" id="rewardNote">Reward bars stay at zero until live hardware measurements exist.</div>
+      <div class="cumulative-row">
+        <span class="cum-label">Cumulative Reward</span>
+        <span class="cum-value" id="cumReward">0.00</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-heading">Reward History</div>
+      <div id="rewardHistory"><div class="empty-state">No steps yet</div></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-heading">Findings</div>
+      <div class="finding-list" id="findings"><div class="empty-state">No findings yet</div></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-heading">Violations & Flags</div>
+      <div id="violations"><div class="empty-state">None detected</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROLE_COLORS = {
+  "Latency Agent": "var(--purple)",
+  "Cost Agent": "var(--cyan)",
+  "Quality Agent": "var(--amber)",
+  Orchestrator: "var(--green)",
+  "Oversight Agent": "var(--pink)",
+  Planner: "var(--purple)",
+  Scheduler: "var(--cyan)",
+  Evaluator: "var(--amber)",
+  Optimizer: "var(--green)",
+  Manual: "var(--pink)",
+};
+
+const DIFFICULTY_COLORS = {
+  Easy: "var(--green)",
+  Medium: "var(--amber)",
+  "Medium-Hard": "var(--orange)",
+  Hard: "var(--red)",
+};
+
+const arenaCanvas = document.getElementById("arenaCanvas");
+const arenaCtx = arenaCanvas.getContext("2d");
+const arenaActionLabel = document.getElementById("arenaActionLabel");
+
+const appState = {
+  info: null,
+  selectedTaskLevel: 1,
+  running: false,
+  cumulativeReward: 0,
+  wsConnected: false,
+  currentStation: "control",
+  targetStation: "control",
+  animationFrame: 0,
+  maxSteps: 8,
+  lastPayload: null,
+};
+
+const stations = {
+  control: { x: 0.12, y: 0.55, color: "#64748b", label: "CONTROL" },
+  planner: { x: 0.28, y: 0.28, color: "#a78bfa", label: "LATENCY" },
+  scheduler: { x: 0.28, y: 0.78, color: "#22d3ee", label: "COST" },
+  gpu: { x: 0.55, y: 0.5, color: "#fbbf24", label: "GPU GRID" },
+  evaluator: { x: 0.78, y: 0.3, color: "#fb923c", label: "QUALITY" },
+  optimizer: { x: 0.78, y: 0.72, color: "#34d399", label: "ORCHESTRATOR" },
+};
+
+let actor = { x: 0, y: 0, tx: 0, ty: 0 };
+let arenaParticles = [];
+
+function resizeArena() {
+  const rect = arenaCanvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  arenaCanvas.width = rect.width * dpr;
+  arenaCanvas.height = rect.height * dpr;
+  arenaCanvas.style.width = rect.width + "px";
+  arenaCanvas.style.height = rect.height + "px";
+  arenaCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const control = stationPos("control");
+  actor.x = control.x;
+  actor.y = control.y;
+  actor.tx = control.x;
+  actor.ty = control.y;
+}
+
+function stationPos(key) {
+  const rect = arenaCanvas.parentElement.getBoundingClientRect();
+  const station = stations[key];
+  return { x: rect.width * station.x, y: rect.height * station.y };
+}
+
+function spawnParticles(x, y, color) {
+  for (let i = 0; i < 10; i += 1) {
+    arenaParticles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3,
+      life: 1,
+      color,
+    });
+  }
+}
+
+function moveActorTo(stationKey, labelText) {
+  appState.currentStation = stationKey;
+  const position = stationPos(stationKey);
+  actor.tx = position.x;
+  actor.ty = position.y;
+  if (labelText) {
+    arenaActionLabel.textContent = labelText;
+    arenaActionLabel.classList.add("visible");
+  } else {
+    arenaActionLabel.classList.remove("visible");
+  }
+  spawnParticles(position.x, position.y, stations[stationKey].color);
+}
+
+function drawArena() {
+  appState.animationFrame += 1;
+  const rect = arenaCanvas.parentElement.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+
+  arenaCtx.clearRect(0, 0, width, height);
+
+  for (let y = 0; y < height; y += 24) {
+    for (let x = 0; x < width; x += 24) {
+      const alt = (Math.floor(x / 24) + Math.floor(y / 24)) % 2 === 0;
+      arenaCtx.fillStyle = alt ? "#0d1219" : "#10161f";
+      arenaCtx.fillRect(x, y, 24, 24);
+    }
+  }
+
+  arenaCtx.strokeStyle = "rgba(251,191,36,0.08)";
+  arenaCtx.lineWidth = 12;
+  arenaCtx.lineCap = "round";
+  const links = [
+    ["control", "planner"],
+    ["control", "scheduler"],
+    ["planner", "gpu"],
+    ["scheduler", "gpu"],
+    ["gpu", "evaluator"],
+    ["gpu", "optimizer"],
+  ];
+  links.forEach(([from, to]) => {
+    const start = stationPos(from);
+    const end = stationPos(to);
+    arenaCtx.beginPath();
+    arenaCtx.moveTo(start.x, start.y);
+    arenaCtx.lineTo(end.x, end.y);
+    arenaCtx.stroke();
+  });
+
+  Object.entries(stations).forEach(([key, station]) => {
+    const pos = stationPos(key);
+    const active = key === appState.currentStation;
+    arenaCtx.fillStyle = active ? "rgba(255,255,255,0.02)" : "rgba(15,21,32,0.88)";
+    arenaCtx.strokeStyle = active ? station.color : "#253040";
+    arenaCtx.lineWidth = active ? 1.6 : 1;
+    roundRect(arenaCtx, pos.x - 44, pos.y - 26, 88, 52, 8);
+    arenaCtx.fill();
+    arenaCtx.stroke();
+
+    arenaCtx.fillStyle = station.color;
+    arenaCtx.beginPath();
+    arenaCtx.arc(pos.x - 24, pos.y, active ? 9 : 7, 0, Math.PI * 2);
+    arenaCtx.fill();
+    if (active) {
+      arenaCtx.globalAlpha = 0.2;
+      arenaCtx.beginPath();
+      arenaCtx.arc(pos.x - 24, pos.y, 18 + Math.sin(appState.animationFrame * 0.05) * 2, 0, Math.PI * 2);
+      arenaCtx.fill();
+      arenaCtx.globalAlpha = 1;
+    }
+
+    arenaCtx.fillStyle = active ? "#f8fafc" : "#94a3b8";
+    arenaCtx.font = active ? "600 10px Space Grotesk, sans-serif" : "500 9px Space Grotesk, sans-serif";
+    arenaCtx.textAlign = "left";
+    arenaCtx.fillText(station.label, pos.x - 8, pos.y - 4);
+    arenaCtx.fillStyle = "#64748b";
+    arenaCtx.font = "500 7px JetBrains Mono, monospace";
+    arenaCtx.fillText(active ? "active" : "idle", pos.x - 8, pos.y + 10);
+  });
+
+  const dx = actor.tx - actor.x;
+  const dy = actor.ty - actor.y;
+  actor.x += dx * 0.08;
+  actor.y += dy * 0.08;
+
+  arenaCtx.fillStyle = "#fbbf24";
+  arenaCtx.beginPath();
+  arenaCtx.arc(actor.x, actor.y, 9, 0, Math.PI * 2);
+  arenaCtx.fill();
+  arenaCtx.fillStyle = "#07090d";
+  arenaCtx.font = "700 7px JetBrains Mono, monospace";
+  arenaCtx.textAlign = "center";
+  arenaCtx.fillText("RL", actor.x, actor.y + 2);
+
+  for (let i = arenaParticles.length - 1; i >= 0; i -= 1) {
+    const particle = arenaParticles[i];
+    particle.x += particle.vx;
+    particle.y += particle.vy;
+    particle.life -= 0.03;
+    if (particle.life <= 0) {
+      arenaParticles.splice(i, 1);
+      continue;
+    }
+    arenaCtx.globalAlpha = particle.life;
+    arenaCtx.fillStyle = particle.color;
+    arenaCtx.beginPath();
+    arenaCtx.arc(particle.x, particle.y, 2.5, 0, Math.PI * 2);
+    arenaCtx.fill();
+    arenaCtx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(drawArena);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function addLine(html) {
+  const div = document.createElement("div");
+  div.className = "t-line";
+  div.innerHTML = html || "&nbsp;";
+  const terminal = document.getElementById("terminal");
+  terminal.appendChild(div);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function setRawPayload(payload) {
+  appState.lastPayload = payload;
+  document.getElementById("rawPanel").textContent = JSON.stringify(payload, null, 2);
+}
+
+function setGauge(id, value, pct, color) {
+  document.getElementById(id + "Val").textContent = value;
+  const fill = document.getElementById(id + "Fill");
+  fill.style.width = pct + "%";
+  if (color) {
+    fill.style.background = color;
+  }
+}
+
+function formatCurrency(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
+function renderOperationalContext(task, context = {}) {
+  const scenarioName = context.scenario_name || task?.scenario_name || "Pending";
+  const scenarioSummary = context.scenario_summary || task?.scenario_summary || "Awaiting scenario details from the environment.";
+  const budgetCap = Number(context.budget_cap_usd ?? task?.budget_cap_usd ?? 0);
+  const budgetRemaining = Number(context.budget_remaining_usd ?? budgetCap);
+  const pool = Array.isArray(context.available_gpu_pool) && context.available_gpu_pool.length
+    ? context.available_gpu_pool.join(", ")
+    : (task?.gpu || "Pending");
+
+  document.getElementById("scenarioName").textContent = scenarioName;
+  document.getElementById("scenarioSummary").textContent = scenarioSummary;
+  document.getElementById("opsObjective").textContent = context.primary_objective || task?.primary_objective || "Pending";
+  document.getElementById("opsTraffic").textContent = context.traffic_level || task?.traffic_level || "Pending";
+  document.getElementById("opsLatency").textContent = `${Number(context.latency_sla_ms ?? task?.latency_sla_ms ?? 0)} ms`;
+  document.getElementById("opsQuality").textContent = `${((Number(context.quality_sla ?? task?.quality_sla ?? 0.95)) * 100).toFixed(1)}%`;
+  document.getElementById("opsBudget").textContent = `${formatCurrency(budgetRemaining)} left of ${formatCurrency(budgetCap)}`;
+  document.getElementById("opsIncident").textContent = context.incident_status || "nominal";
+  document.getElementById("opsMode").textContent = context.operating_mode || "balanced";
+  document.getElementById("opsRisk").textContent = context.risk_level || "low";
+  document.getElementById("opsQueue").textContent = context.observed_queue_pressure || "low";
+  document.getElementById("opsOversight").textContent = context.oversight_status || "clear";
+  document.getElementById("opsPool").textContent = pool;
+}
+
+function clearRewardBars() {
+  ["throughput", "quality", "sol", "efficiency", "novelty", "penalty"].forEach((key) => {
+    const el = document.getElementById("rw-" + key);
+    el.style.width = "0%";
+    el.textContent = "";
+  });
+}
+
+function pickBestTrial(payload) {
+  const trials = payload?.observation?.trial_results || [];
+  return trials.length ? trials[0] : null;
+}
+
+function qualityColor(quality) {
+  if (quality >= 0.95) return "var(--green)";
+  if (quality >= 0.9) return "var(--amber)";
+  return "var(--red)";
+}
+
+function setRewardBar(key, pct, text) {
+  const el = document.getElementById("rw-" + key);
+  el.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+  el.textContent = text || "";
+}
+
+function applyPayloadMetrics(payload, task, labelText) {
+  const best = pickBestTrial(payload);
+  const reward = Number(payload.reward || 0);
+  const qualityDiagnostics = payload?.info?.quality_diagnostics || {};
+  const bestQuality = Number(qualityDiagnostics.best_quality || best?.quality_match_rate || 0);
+  const liveThroughput = Number(best?.throughput_tok_s || payload?.observation?.best_throughput || payload?.observation?.baseline_throughput || 0);
+  const speedup = Number(best?.speedup || payload?.observation?.current_speedup || 1);
+  const cost = Number(payload?.observation?.cost_so_far_usd || 0);
+  renderOperationalContext(task, payload?.observation || {});
+
+  document.getElementById("stepRewardLabel").textContent = labelText;
+  appState.cumulativeReward += reward;
+  document.getElementById("cumReward").textContent = appState.cumulativeReward.toFixed(2);
+
+  setGauge("tput", liveThroughput > 0 ? `${liveThroughput.toFixed(1)} tok/s live` : `${task.baseline_expected_tok_s.toFixed(1)} tok/s plan`, Math.min((liveThroughput / 225) * 100, 100), "var(--amber)");
+  setGauge("qual", bestQuality > 0 ? `${(bestQuality * 100).toFixed(1)}%` : "Pending", bestQuality * 100, qualityColor(bestQuality));
+  setGauge("cost", `$${cost.toFixed(3)}`, Math.min(cost * 100, 100), "var(--green)");
+
+  setRewardBar("throughput", (speedup / task.target_speedup) * 100, `${speedup.toFixed(2)}x`);
+  setRewardBar("quality", bestQuality * 100, `${(bestQuality * 100).toFixed(1)}%`);
+  setRewardBar("sol", (reward / 1.2) * 100, reward.toFixed(2));
+  setRewardBar("efficiency", (liveThroughput / Math.max(task.baseline_expected_tok_s, 1)) * 100, liveThroughput > 0 ? liveThroughput.toFixed(1) : "");
+  setRewardBar("novelty", payload?.info?.planner_origin === "planner_generated" ? 80 : 45, payload?.info?.planner_origin === "planner_generated" ? "server" : "mixed");
+  setRewardBar("penalty", bestQuality >= 0.95 ? 0 : (0.95 - bestQuality) * 250, bestQuality >= 0.95 ? "" : "gate");
+}
+
+function addRewardHistory(label, value) {
+  const history = document.getElementById("rewardHistory");
+  if (history.querySelector(".empty-state")) {
+    history.innerHTML = "";
+  }
+  const div = document.createElement("div");
+  div.className = "history-item";
+  div.innerHTML = `<span>${escapeHtml(label)}</span><span class="value">${value.toFixed(2)}</span>`;
+  history.appendChild(div);
+}
+
+function addFinding(title, detail, color = "var(--amber)", bg = "var(--amber-dim)") {
+  const findings = document.getElementById("findings");
+  if (findings.querySelector(".empty-state")) {
+    findings.innerHTML = "";
+  }
+  const div = document.createElement("div");
+  div.className = "finding";
+  div.innerHTML = `
+    <div class="disc-icon" style="background:${bg};color:${color};">&#9670;</div>
+    <div class="disc-body">
+      <div class="disc-title">${escapeHtml(title)}</div>
+      <div class="disc-detail">${escapeHtml(detail)}</div>
+    </div>
+  `;
+  findings.appendChild(div);
+  requestAnimationFrame(() => div.classList.add("visible"));
+}
+
+function addViolation(label, value) {
+  const violations = document.getElementById("violations");
+  if (violations.querySelector(".empty-state")) {
+    violations.innerHTML = "";
+  }
+  const div = document.createElement("div");
+  div.className = "violation-item";
+  div.innerHTML = `<span>${escapeHtml(label)}</span><span class="value">${escapeHtml(value)}</span>`;
+  violations.appendChild(div);
+}
+
+function addPipeStep(label, color, done = false) {
+  const list = document.getElementById("pipelineSteps");
+  if (list.querySelector(".empty-state")) {
+    list.innerHTML = "";
+  }
+  const step = document.createElement("div");
+  step.className = "pipe-step active";
+  step.innerHTML = `<div class="step-icon" style="color:${color}">+</div><span>${escapeHtml(label)}</span>`;
+  list.appendChild(step);
+  requestAnimationFrame(() => step.classList.add("visible"));
+
+  const existing = list.querySelectorAll(".pipe-step");
+  if (existing.length > 1) {
+    const previous = existing[existing.length - 2];
+    previous.classList.remove("active");
+    previous.classList.add("done");
+    const icon = previous.querySelector(".step-icon");
+    if (icon) {
+      icon.innerHTML = "&#10003;";
+    }
+  }
+}
+
+function setTopStatus(text, live = false) {
+  document.getElementById("statusText").textContent = text;
+  document.getElementById("statusDot").classList.toggle("live", live);
+}
+
+function currentTask() {
+  return appState.info?.task_catalog?.find(task => task.level === appState.selectedTaskLevel) || null;
+}
+
+function scenarioColor(task) {
+  return DIFFICULTY_COLORS[task.difficulty] || "var(--amber)";
+}
+
+function renderScenarioList() {
+  const container = document.getElementById("scenarioList");
+  container.innerHTML = "";
+  appState.info.task_catalog.forEach((task) => {
+    const div = document.createElement("div");
+    div.className = "scenario-opt" + (task.level === appState.selectedTaskLevel ? " active" : "");
+    div.dataset.level = String(task.level);
+    div.innerHTML = `
+      <div class="sc-dot" style="background:${scenarioColor(task)};"></div>
+      <div class="sc-meta">
+        <span class="sc-name">${escapeHtml(task.name)}</span>
+        <span class="sc-detail">${escapeHtml(task.draft_model)} → ${escapeHtml(task.target_model)} • ${escapeHtml(task.gpu)} • ${escapeHtml(task.scenario_name || "ops scenario")} • ${escapeHtml(task.rollout_status || "staged")}</span>
+      </div>
+      <span class="sc-diff" style="color:${scenarioColor(task)};">${escapeHtml(task.difficulty)}</span>
+    `;
+    div.addEventListener("click", () => selectScenario(task.level));
+    container.appendChild(div);
+  });
+}
+
+function selectScenario(level) {
+  if (appState.running) {
+    return;
+  }
+  appState.selectedTaskLevel = level;
+  renderScenarioList();
+  syncTaskPresentation();
+}
+
+function syncTaskPresentation() {
+  const task = currentTask();
+  if (!task) {
+    return;
+  }
+  appState.maxSteps = task.max_steps;
+  document.getElementById("topbarEnv").textContent = task.slug;
+  setGauge("tput", `${task.baseline_expected_tok_s.toFixed(1)} tok/s plan`, Math.min((task.baseline_expected_tok_s / 225) * 100, 100), "var(--amber)");
+  setGauge("qual", "Pending", 0, "var(--cyan)");
+  setGauge("cost", "$0.000", 0, "var(--green)");
+  setGauge("step", `0 / ${task.max_steps}`, 0, "var(--accent)");
+  document.getElementById("modeNote").textContent =
+    `${task.name} on ${task.gpu}. Scenario: ${task.scenario_name || "ops run"}. Rollout: ${task.rollout_status || "staged"}. Target speedup ${task.target_speedup}x. Baseline ${task.baseline_expected_tok_s.toFixed(1)} tok/s is shown as a task plan, not a live measurement.`;
+  renderOperationalContext(task, task);
+}
+
+function resetPanels() {
+  document.getElementById("terminal").innerHTML = "";
+  document.getElementById("rawPanel").textContent = "Waiting for payload...";
+  document.getElementById("pipelineSteps").innerHTML = '<div class="empty-state">No steps recorded yet.</div>';
+  document.getElementById("findings").innerHTML = '<div class="empty-state">No findings yet</div>';
+  document.getElementById("rewardHistory").innerHTML = '<div class="empty-state">No steps yet</div>';
+  document.getElementById("violations").innerHTML = '<div class="empty-state">None detected</div>';
+  document.getElementById("stepRewardLabel").textContent = "Pending";
+  document.getElementById("cumReward").textContent = "0.00";
+  clearRewardBars();
+  appState.cumulativeReward = 0;
+  addLine('<span class="t-dim">Panels cleared. Select a scenario or run a step.</span>');
+}
+
+async function fetchJson(path, options = {}) {
+  const response = await fetch(path, options);
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.message || `Request failed: ${response.status}`);
+  }
+  return payload;
+}
+
+function rolePrefix(role) {
+  const color = ROLE_COLORS[role] || "var(--text-dim)";
+  return `<span style="color:${color}">[${escapeHtml(role)}]</span>`;
+}
+
+function actionStation(stepIndex) {
+  const sequence = ["planner", "scheduler", "gpu", "evaluator", "optimizer"];
+  return sequence[stepIndex % sequence.length];
+}
+
+function buildCandidate(base, overrides) {
+  return {
+    num_speculative_tokens: base.num_speculative_tokens,
+    acceptance_threshold: base.acceptance_threshold,
+    draft_temperature: base.draft_temperature,
+    tree_depth: base.tree_depth,
+    tree_branching: base.tree_branching,
+    ngram_cache_size: base.ngram_cache_size,
+    adaptive_depth: base.adaptive_depth,
+    label: base.label,
+    ...overrides,
+  };
+}
+
+function buildAutoAction(task, iteration) {
+  const phase = iteration < 3 ? "exploration" : "exploitation";
+  const isA100 = task.gpu === "A100-80GB";
+  const isHard = task.difficulty === "Hard";
+  if (isA100) {
+    return {
+      operation: iteration === 0 ? "quality_lock" : "set_mode",
+      target_mode: iteration === 0 ? "safe" : "balanced",
+      allocation_policy: "balanced",
+      reroute_policy: "current",
+      risk_tolerance: iteration === 0 ? "low" : "medium",
+      rollback_to_best: false,
+      request_quality_lock: iteration === 0,
+      request_oversight_review: false,
+      candidate_configs: [
+        {
+          num_speculative_tokens: 2,
+          acceptance_threshold: 0.95,
+          draft_temperature: 0.0,
+          tree_depth: 1,
+          tree_branching: 1,
+          ngram_cache_size: 512,
+          adaptive_depth: false,
+          label: `lookup_anchor_${iteration + 1}`,
+        },
+        {
+          num_speculative_tokens: 3,
+          acceptance_threshold: 0.95,
+          draft_temperature: 0.0,
+          tree_depth: 1,
+          tree_branching: 1,
+          ngram_cache_size: 768,
+          adaptive_depth: false,
+          label: `lookup_push_3_${iteration + 1}`,
+        },
+        {
+          num_speculative_tokens: 4,
+          acceptance_threshold: 0.95,
+          draft_temperature: 0.0,
+          tree_depth: 1,
+          tree_branching: 1,
+          ngram_cache_size: 1024,
+          adaptive_depth: false,
+          label: `lookup_push_4_${iteration + 1}`,
+        },
+      ],
+      phase,
+      reasoning: `Iteration ${iteration + 1} for ${task.slug} anchors on the quality-safe prompt-lookup lane we validated on A100.`,
+      hypothesis: "Start from the known-safe lookup regime, then widen prompt-lookup aggressiveness while preserving exactness.",
+    };
+  }
+
+  const base = {
+    num_speculative_tokens: isHard ? 6 : 4,
+    acceptance_threshold: isHard ? 0.62 : 0.55,
+    draft_temperature: 0.0,
+    tree_depth: isA100 ? 1 : 2,
+    tree_branching: isHard ? 2 : 1,
+    ngram_cache_size: iteration >= 2 ? 512 : 0,
+    adaptive_depth: iteration >= 3,
+    label: `iter_${iteration + 1}_seed`,
+  };
+
+  return {
+    operation: iteration === 0 ? "set_mode" : (isHard ? "oversight_review" : "allocate_budget"),
+    target_mode: isHard ? "aggressive" : "balanced",
+    allocation_policy: isHard ? "performance" : "balanced",
+    reroute_policy: isHard ? "premium" : "resilient",
+    risk_tolerance: isHard ? "medium" : "medium",
+    rollback_to_best: false,
+    request_quality_lock: false,
+    request_oversight_review: isHard && iteration > 0,
+    candidate_configs: [
+      buildCandidate(base, {
+        num_speculative_tokens: base.num_speculative_tokens + 1,
+        label: `${phase}_balanced_${iteration + 1}`,
+      }),
+      buildCandidate(base, {
+        acceptance_threshold: Math.min(base.acceptance_threshold + 0.08, 0.9),
+        tree_depth: isA100 ? 1 : base.tree_depth + 1,
+        label: `${phase}_quality_${iteration + 1}`,
+      }),
+      buildCandidate(base, {
+        ngram_cache_size: iteration >= 1 ? 1024 : 0,
+        adaptive_depth: iteration >= 2,
+        label: `${phase}_cache_${iteration + 1}`,
+      }),
+    ],
+    phase,
+    reasoning: `Iteration ${iteration + 1} for ${task.slug} keeps a diverse search front while Modal is pending.`,
+    hypothesis: "These configs cover balanced, quality-first, and cache-assisted regimes.",
+  };
+}
+
+function nextAutoAction(task, iteration) {
+  const recommended = appState.lastPayload?.info?.recommended_action;
+  if (recommended && Array.isArray(recommended.candidate_configs)) {
+    return recommended;
+  }
+  return buildAutoAction(task, iteration);
+}
+
+function setRunningState(running) {
+  appState.running = running;
+  document.getElementById("runBtn").disabled = running;
+  document.getElementById("manualBtn").disabled = running;
+  document.getElementById("schemaBtn").disabled = running;
+  document.getElementById("resetBtn").disabled = false;
+}
+
+async function resetEnvironment(logMessage = true) {
+  const task = currentTask();
+  const payload = await fetchJson(`/reset?task_level=${task.level}`, { method: "POST" });
+  setRawPayload(payload);
+  renderOperationalContext(task, payload.observation || {});
+  if (logMessage) {
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-ok">Environment reset</span> for <span class="t-str">${escapeHtml(task.slug)}</span>.`);
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">${escapeHtml(payload.observation.evaluator_feedback)}</span>`);
+  }
+  moveActorTo("control");
+  document.getElementById("stepRewardLabel").textContent = "Pending";
+  clearRewardBars();
+  setGauge("step", `0 / ${task.max_steps}`, 0, "var(--accent)");
+  setGauge("cost", "$0.000", 0, "var(--green)");
+  setGauge("qual", "Pending", 0, "var(--cyan)");
+  if (Number(payload.observation.baseline_throughput || 0) > 0) {
+    setGauge("tput", `${Number(payload.observation.baseline_throughput).toFixed(1)} tok/s baseline`, Math.min((Number(payload.observation.baseline_throughput) / 225) * 100, 100), "var(--amber)");
+  }
+  return payload;
+}
+
+async function runEpisode() {
+  if (appState.running) {
+    return;
+  }
+  const task = currentTask();
+  if (!task) {
+    return;
+  }
+
+  setRunningState(true);
+  setTopStatus("Running", true);
+  resetPanels();
+  addLine(`${rolePrefix("SpeculateForge")} Live auto-run started for <span class="t-str">${escapeHtml(task.slug)}</span>.`);
+  addLine(`${rolePrefix("SpeculateForge")} Draft <span class="t-str">${escapeHtml(task.draft_model)}</span> → Target <span class="t-str">${escapeHtml(task.target_model)}</span> on <span class="t-num">${escapeHtml(task.gpu)}</span>.`);
+  addLine(`${rolePrefix("SpeculateForge")} Scenario <span class="t-str">${escapeHtml(task.scenario_name || "ops run")}</span>: <span class="t-sub">${escapeHtml(task.scenario_summary || "")}</span>`);
+  addLine(`${rolePrefix("SpeculateForge")} The command center will use live Modal metrics when available and fall back honestly when they are not.`);
+  addLine("");
+
+  try {
+    await resetEnvironment(false);
+    const stepsToRun = Math.min(task.max_steps, 4);
+    for (let index = 0; index < stepsToRun; index += 1) {
+      const action = nextAutoAction(task, index);
+      const station = actionStation(index);
+      moveActorTo(station, `${action.phase} • ${station}`);
+      addPipeStep(`${action.phase}:${action.candidate_configs[0].label}`, ROLE_COLORS["Latency Agent"]);
+      await wait(350);
+
+      const payload = await fetchJson(`/step?task_level=${task.level}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(action),
+      });
+      setRawPayload(payload);
+      setGauge("step", `${index + 1} / ${task.max_steps}`, ((index + 1) / task.max_steps) * 100, "var(--accent)");
+      addRewardHistory(`${action.phase}_${index + 1}`, payload.reward || 0);
+      applyPayloadMetrics(payload, task, `Step ${index + 1} • reward ${Number(payload.reward || 0).toFixed(2)}`);
+      const strategic = payload.info.strategic_action || null;
+
+      if (payload.info.planner_origin === "planner_generated") {
+        addLine(`${rolePrefix("Latency Agent")} Server-side planner replaced the placeholder action with live command-center candidates.`);
+      } else if (payload.info.planner_origin === "planner_filled") {
+        addLine(`${rolePrefix("Latency Agent")} Server-side planner filled missing candidate slots before dispatch.`);
+      } else {
+        addLine(`${rolePrefix("Latency Agent")} ${escapeHtml(action.reasoning)}`);
+      }
+      payload.info.candidate_configs.forEach((candidate, candidateIndex) => {
+        addLine(
+          `<span class="t-dim">  candidate ${candidateIndex + 1}</span> ` +
+          `<span class="t-str">${escapeHtml(candidate.label)}</span> ` +
+          `<span class="t-sub">n_spec=${candidate.num_speculative_tokens}, threshold=${candidate.acceptance_threshold}, tree=${candidate.tree_depth}</span>`
+        );
+      });
+      if (strategic) {
+        addLine(
+          `${rolePrefix("Orchestrator")} <span class="t-sub">operation=${escapeHtml(strategic.operation || "tune")}, mode=${escapeHtml(strategic.target_mode || "balanced")}, allocation=${escapeHtml(strategic.allocation_policy || "balanced")}, reroute=${escapeHtml(strategic.reroute_policy || "current")}.</span>`
+        );
+        (strategic.notes || []).forEach((note, noteIndex) => {
+          addFinding(`Ops note ${index + 1}.${noteIndex + 1}`, note, "var(--pink)", "rgba(244,114,182,0.12)");
+        });
+      }
+      const opsDiagnostics = payload.info.ops_diagnostics || null;
+      if (opsDiagnostics) {
+        addLine(
+          `${rolePrefix("SpeculateForge")} <span class="t-dim">Observed queue=${escapeHtml(opsDiagnostics.observed_queue_pressure || "low")}, oversight=${escapeHtml(opsDiagnostics.oversight_status || "clear")}.</span>`
+        );
+      }
+      const longHorizon = payload.info.long_horizon || null;
+      if (longHorizon) {
+        addLine(
+          `${rolePrefix("SpeculateForge")} <span class="t-dim">Carryover penalty=${Number(longHorizon.carryover_penalty || 0).toFixed(2)}, delayed-risk penalty=${Number(longHorizon.post_step_penalty || 0).toFixed(2)}, terminal=${escapeHtml(longHorizon.terminal_reason || "none")}.</span>`
+        );
+        if (longHorizon.terminal_reason) {
+          addFinding(
+            `Long-horizon incident • ${longHorizon.terminal_reason}`,
+            "The command center accumulated enough hidden risk to trigger a delayed failure condition.",
+            "var(--pink)",
+            "rgba(244,114,182,0.12)"
+          );
+        }
+      }
+      (payload.info.role_logs || []).forEach((entry) => {
+        addLine(`${rolePrefix(entry.role)} <span class="t-sub">${escapeHtml(entry.message)}</span>`);
+      });
+      if (payload.info.backend_status === "live_modal") {
+        const best = pickBestTrial(payload);
+        if (best) {
+          addLine(`${rolePrefix("SpeculateForge")} <span class="t-ok">Live best:</span> <span class="t-num">${best.throughput_tok_s.toFixed(2)} tok/s</span>, speedup <span class="t-num">${best.speedup.toFixed(2)}x</span>, quality <span class="t-num">${(best.quality_match_rate * 100).toFixed(1)}%</span>.`);
+        }
+        const diagnostics = payload.info.quality_diagnostics || {};
+        addFinding(
+          `Iteration ${index + 1} • ${payload.observation.bottleneck}`,
+          `Pass=${diagnostics.pass_count || 0}, near-miss=${diagnostics.near_miss_count || 0}, best quality=${((diagnostics.best_quality || 0) * 100).toFixed(1)}%.`,
+          qualityColor(Number(diagnostics.best_quality || 0)),
+          "rgba(56,189,248,0.10)"
+        );
+      } else {
+        addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">Reward remains ${Number(payload.reward || 0).toFixed(2)} until live GPU data is available.</span>`);
+      }
+      addLine("");
+      await wait(250);
+    }
+
+    moveActorTo("optimizer", "next phase");
+    addLine(`${rolePrefix("Orchestrator")} <span class="t-ok">Episode loop complete.</span> The server returned a recommended next action for the next search wave.`);
+  } catch (error) {
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-err">${escapeHtml(error.message)}</span>`);
+    addViolation("runtime_error", error.message);
+  } finally {
+    setRunningState(false);
+    setTopStatus(appState.wsConnected ? "Connected" : "Ready", appState.wsConnected);
+  }
+}
+
+function manualPayloadFromForm() {
+  return {
+    num_speculative_tokens: Number(document.getElementById("numSpecInput").value),
+    acceptance_threshold: Number(document.getElementById("thresholdInput").value),
+    draft_temperature: Number(document.getElementById("tempInput").value),
+    tree_depth: Number(document.getElementById("treeDepthInput").value),
+    tree_branching: Number(document.getElementById("treeBranchInput").value),
+    ngram_cache_size: Number(document.getElementById("ngramInput").value),
+    adaptive_depth: document.getElementById("adaptiveInput").checked,
+    label: document.getElementById("labelInput").value || "manual_probe",
+  };
+}
+
+async function runManualStep() {
+  if (appState.running) {
+    return;
+  }
+  const task = currentTask();
+  const config = manualPayloadFromForm();
+  setTopStatus("Manual Run", true);
+  moveActorTo("gpu", `manual • ${config.label}`);
+  addPipeStep(`manual:${config.label}`, ROLE_COLORS.Manual);
+
+  try {
+    const payload = await fetchJson(`/manual_step?task_level=${task.level}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    });
+    setRawPayload(payload);
+    addLine(`${rolePrefix("Manual")} Submitted <span class="t-str">${escapeHtml(config.label)}</span> for <span class="t-str">${escapeHtml(task.slug)}</span>.`);
+    (payload.info.role_logs || []).forEach((entry) => {
+      addLine(`${rolePrefix(entry.role)} <span class="t-sub">${escapeHtml(entry.message)}</span>`);
+    });
+    (payload.info.preflight_notes || []).forEach((note, index) => {
+      addLine(`<span class="t-dim">  preflight ${index + 1}</span> <span class="t-sub">${escapeHtml(note)}</span>`);
+      addFinding(`Manual preflight ${index + 1}`, note, "var(--pink)", "rgba(244,114,182,0.12)");
+    });
+    addRewardHistory(config.label, Number(payload.reward || 0));
+    applyPayloadMetrics(payload, task, `Manual • ${config.label}`);
+    if (payload.info.backend_status === "live_modal" && payload.result) {
+      addLine(`${rolePrefix("Manual")} <span class="t-ok">Live result:</span> <span class="t-num">${Number(payload.result.throughput_tok_s || 0).toFixed(2)} tok/s</span> at quality <span class="t-num">${((Number(payload.result.quality_match_rate || 0)) * 100).toFixed(1)}%</span>.`);
+      if (Number(payload.result.quality_match_rate || 0) < 0.95) {
+        addViolation("quality_gate", `manual quality ${(Number(payload.result.quality_match_rate || 0) * 100).toFixed(1)}% < 95%`);
+      }
+    }
+    addLine("");
+  } catch (error) {
+    addLine(`${rolePrefix("Manual")} <span class="t-err">${escapeHtml(error.message)}</span>`);
+    addViolation("manual_error", error.message);
+  } finally {
+    setTopStatus(appState.wsConnected ? "Connected" : "Ready", appState.wsConnected);
+    moveActorTo("control");
+  }
+}
+
+async function showSchema() {
+  try {
+    const payload = await fetchJson("/schema");
+    setRawPayload(payload);
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-ok">Schema loaded.</span> Action, config, observation, and state models are available in Raw JSON.`);
+  } catch (error) {
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-err">${escapeHtml(error.message)}</span>`);
+  }
+}
+
+function clearPanelsOnly() {
+  resetPanels();
+  syncTaskPresentation();
+  moveActorTo("control");
+}
+
+function bindTabs() {
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach((el) => el.classList.remove("active"));
+      tab.classList.add("active");
+      const selected = tab.dataset.tab;
+      document.getElementById("terminal").classList.toggle("active", selected === "terminal");
+      document.getElementById("rawPanel").classList.toggle("active", selected === "raw");
+    });
+  });
+}
+
+function connectWs() {
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+  ws.addEventListener("open", () => {
+    appState.wsConnected = true;
+    setTopStatus(appState.running ? "Running" : "Connected", true);
+  });
+
+  ws.addEventListener("message", (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      if (payload.event && payload.payload) {
+        setRawPayload(payload.payload);
+      }
+      if (payload.event === "reset") {
+        addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">WS reset event received.</span>`);
+      } else if (payload.event === "step") {
+        addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">WS step event received.</span>`);
+      } else if (payload.event === "manual_step") {
+        addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">WS manual event received.</span>`);
+      }
+    } catch {
+      addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">WS message received.</span>`);
+    }
+  });
+
+  ws.addEventListener("close", () => {
+    appState.wsConnected = false;
+    setTopStatus(appState.running ? "Running" : "Disconnected", false);
+    setTimeout(connectWs, 1500);
+  });
+}
+
+async function init() {
+  resizeArena();
+  window.addEventListener("resize", resizeArena);
+  drawArena();
+  bindTabs();
+  connectWs();
+
+  document.getElementById("runBtn").addEventListener("click", runEpisode);
+  document.getElementById("manualBtn").addEventListener("click", runManualStep);
+  document.getElementById("resetBtn").addEventListener("click", () => resetEnvironment().catch((error) => addLine(`${rolePrefix("SpeculateForge")} <span class="t-err">${escapeHtml(error.message)}</span>`)));
+  document.getElementById("schemaBtn").addEventListener("click", showSchema);
+  document.getElementById("clearBtn").addEventListener("click", clearPanelsOnly);
+
+  try {
+    appState.info = await fetchJson("/info");
+    renderScenarioList();
+    syncTaskPresentation();
+    addLine('<span class="t-dim">SpeculateForge UI connected to the FastAPI environment.</span>');
+    addLine('<span class="t-dim">Use "Run Episode" for the real control loop or "Run This Config" for manual preflight checks.</span>');
+  } catch (error) {
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-err">${escapeHtml(error.message)}</span>`);
+    setTopStatus("Error", false);
+    return;
+  }
+
+  try {
+    await resetEnvironment(false);
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-dim">Initial reset complete for ${escapeHtml(currentTask().slug)}.</span>`);
+  } catch (error) {
+    addLine(`${rolePrefix("SpeculateForge")} <span class="t-err">${escapeHtml(error.message)}</span>`);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

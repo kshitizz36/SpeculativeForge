@@ -1,0 +1,11 @@
+task_id: task3
+name: Tree Speculation on H100
+gpu: H100-80GB
+target_model: Llama-3.1-8B
+draft_model: Llama-3.2-1B
+baseline_expected_tok_s: 65.0
+target_speedup: 2.5
+frontier_success_rate: 0.20
+quality_gate: 0.95
+max_steps: 10
+prompt_file: task3_reference_prompts.jsonl
