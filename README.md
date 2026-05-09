@@ -13,6 +13,9 @@ tags:
   - rl-environment
 ---
 
+<img width="1466" height="833" alt="image" src="https://github.com/user-attachments/assets/2e383bd6-aa25-4a73-8ca5-28abf37bfabb" />
+
+
 # SpeculativeForge
 
 SpeculativeForge is a local-first playground for benchmarking and optimizing
